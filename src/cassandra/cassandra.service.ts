@@ -25,10 +25,16 @@ export class CassandraService implements OnModuleInit, OnModuleDestroy {
     console.log('Cassandra đã ngắt kết nối');
   }
 
-  async insertUser(username: string, email: string) {
-    const query = 'INSERT INTO users (username, email) VALUES (?, ?)';
-    await this.client.execute(query, [username, email], { prepare: true });
+  async insertUser(id: string, username: string, email: string) {
+    const query = 'INSERT INTO users (id, username, email) VALUES (?, ?, ?)';
+    await this.client.execute(query, [id, username, email], { prepare: true });
     console.log(`Người dùng ${username} đã được thêm vào cơ sở dữ liệu`);
+  }
+
+  async getAllUsers() {
+    const query = 'SELECT * FROM users';
+    const result = await this.client.execute(query);
+    return result.rows;
   }
 
   async getUserByUsername(username: string) {
