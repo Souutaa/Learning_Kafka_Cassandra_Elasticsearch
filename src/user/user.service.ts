@@ -56,12 +56,43 @@ export class UserService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findById(id: string) {
+    const user = await this.cassandraService.getUserById(id);
+    if (user) {
+      await this.kafkaProducerService.sendMessage(
+        'user-getById',
+        `Get user by id= ${id} success`,
+      );
+      return user;
+    }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.cassandraService.getUserById(id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const userUpdate = {
+      id,
+      email: updateUserDto.email ? updateUserDto.email : user.get('email'),
+      username: updateUserDto.username
+        ? updateUserDto.username
+        : user.get('username'),
+    };
+
+    // Lưu người dùng vào Cassandra
+    await this.cassandraService.updateUser(
+      id,
+      userUpdate.email,
+      userUpdate.username,
+    );
+
+    await this.kafkaProducerService.sendMessage(
+      'user-updated',
+      JSON.stringify(userUpdate),
+    );
+    return userUpdate;
   }
 
   remove(id: number) {

@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
@@ -30,8 +30,23 @@ services:
     networks:
       - kafka-network
 
+  elasticsearch:
+    image: bitnami/elasticsearch:latest
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xmx512m -Xms512m
+      - xpack.security.enabled=false # Tắt bảo mật
+      - xpack.security.http.ssl.enabled=false # Tắt SSL
+    ports:
+      - '9200:9200'
+    networks:
+      - kafka-network
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+
 volumes:
   cassandra-data: # Định nghĩa volume cho Cassandra
+  es-data: # Định nghĩa volume cho Elasticsearch
 
 networks:
   kafka-network:
