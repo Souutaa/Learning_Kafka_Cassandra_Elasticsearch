@@ -32,6 +32,7 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
         topic, // Topic muốn gửi tin nhắn
         messages: [{ value: message }],
       });
+      console.log('-------------------------');
       console.log(`Gửi tin nhắn đến ${topic}: ${message}`);
       await transaction.commit();
       console.log('Giao dịch đã được commit.');

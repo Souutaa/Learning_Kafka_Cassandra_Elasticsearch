@@ -1,0 +1,1 @@
+Query: Xử lý các hành động find, get, list.

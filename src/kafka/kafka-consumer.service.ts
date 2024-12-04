@@ -52,37 +52,22 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
             offset: message.offset,
             value: message.value.toString(),
           });
+          console.log('-------------------------');
 
-          const user: User = JSON.parse(message.value.toString());
+          if (topic == 'user-created' || topic == 'user-updated') {
+            const user: User = JSON.parse(message.value.toString());
 
-          if (!user.id || !user.email || !user.username) {
-            console.warn(`Dữ liệu người dùng không hợp lệ:`, user);
-            return;
+            if (!user.id || !user.email || !user.username) {
+              console.warn(`Dữ liệu người dùng không hợp lệ:`, user);
+              return;
+            }
+
+            await this.elasticsearchService.index({
+              index: 'users',
+              id: user.id,
+              body: user,
+            });
           }
-
-          await this.elasticsearchService.index({
-            index: 'users',
-            id: user.id,
-            body: user,
-          });
-          // bulkMessages.push({
-          //   index: {
-          //     _index: 'users',
-          //     _id: user.id,
-          //   },
-          // });
-          // bulkMessages.push(user);
-
-          // // Gửi yêu cầu bulk sau khi đã tích lũy đủ số lượng (ví dụ 200 tin nhắn)
-          // if (bulkMessages.length >= 200) {
-          //   await this.elasticsearchService.bulk({
-          //     body: bulkMessages,
-          //   });
-          //   console.log(
-          //     `Đã gửi ${bulkMessages.length / 2} người dùng vào Elasticsearch`,
-          //   );
-          //   bulkMessages.length = 0; // Reset mảng bulk
-          // }
         } catch (error) {
           console.error(`Lỗi khi xử lý tin nhắn từ ${topic}:`, error);
           console.error(`Giá trị tin nhắn thô:`, message.value.toString());
